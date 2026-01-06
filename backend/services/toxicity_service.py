@@ -1,7 +1,7 @@
-from typing import Dict, List
+from typing import Dict
 from transformers import pipeline
+from backend.services.comment_service import fetch_instagram_comments
 
-# Load once (VERY IMPORTANT)
 toxicity_classifier = pipeline(
     "text-classification",
     model="unitary/toxic-bert",
@@ -10,18 +10,16 @@ toxicity_classifier = pipeline(
 )
 
 
-
 def analyze_toxicity(instagram_data: Dict) -> float:
     """
-    Analyze toxicity of comments using DistilBERT.
+    Analyze toxicity of real Instagram comments.
     """
 
-    # 🔹 Mock comments for now
-    comments: List[str] = [
-        "This is fake and stupid",
-        "You are an idiot",
-        "Nice video!"
-    ]
+    shortcode = instagram_data["shortcode"]
+    comments = fetch_instagram_comments(shortcode)
+
+    if not comments:
+        return 0.0
 
     results = toxicity_classifier(comments)
 
