@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from backend.api.routes import router as api_router
 
 app = FastAPI(
@@ -7,11 +10,28 @@ app = FastAPI(
     version="1.0.0"
 )
 
-app.include_router(api_router)
+# --------------------------------------------------
+# CORS CONFIG (required for frontend & extensions)
+# --------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # allow all for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/")
-def root():
-    return {
-        "status": "running",
-        "project": "InstaGuard AI"
-    }
+# --------------------------------------------------
+# API ROUTES
+# --------------------------------------------------
+app.include_router(api_router, prefix="/api")
+
+# --------------------------------------------------
+# FRONTEND SERVING (auto-load UI)
+# --------------------------------------------------
+# frontend/index.html will be served at "/"
+app.mount(
+    "/", 
+    StaticFiles(directory="frontend", html=True), 
+    name="frontend"
+)
