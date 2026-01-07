@@ -13,19 +13,30 @@ body {
   height: 100vh;
 }
 
+/* Main Card */
 .card {
   background: #020617;
   padding: 20px;
   border-radius: 10px;
   width: 420px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
 
+/* Title */
 h2 {
   text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Subtitle (optional, safe even if unused) */
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.8;
   margin-bottom: 15px;
 }
 
+/* Input */
 input {
   width: 100%;
   padding: 10px;
@@ -35,6 +46,7 @@ input {
   font-size: 14px;
 }
 
+/* Button */
 button {
   width: 100%;
   padding: 10px;
@@ -50,6 +62,7 @@ button:hover {
   background: #1d4ed8;
 }
 
+/* Output Box */
 pre {
   margin-top: 15px;
   background: #020617;
@@ -57,6 +70,16 @@ pre {
   border-radius: 6px;
   font-size: 13px;
   white-space: pre-wrap;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
+}
+
+/* Scrollbar (optional, modern browsers) */
+pre::-webkit-scrollbar {
+  width: 6px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
 }
