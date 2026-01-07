@@ -3,17 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <title>InstaGuard AI</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 
   <div class="card">
-    <h2>InstaGuard AI</h2>
+    <h2>🛡 InstaGuard AI</h2>
+    <p class="subtitle">
+      Deepfake Detection & Toxic Comment Analysis
+    </p>
 
     <input
       type="text"
       id="url"
       placeholder="Paste Instagram post / reel URL"
+      autocomplete="off"
     />
 
     <button onclick="analyze()">Analyze</button>
@@ -21,6 +28,7 @@
     <pre id="output">Waiting for input...</pre>
   </div>
 
-  <script src="script.js"></script>
+  <!-- JS -->
+  <script src="/script.js"></script>
 </body>
 </html>
