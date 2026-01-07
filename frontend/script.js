@@ -2,10 +2,16 @@ async function analyze() {
   const urlInput = document.getElementById("url");
   const output = document.getElementById("output");
 
-  output.textContent = "Analyzing...";
+  // Basic validation
+  if (!urlInput.value.trim()) {
+    output.textContent = "⚠️ Please enter an Instagram URL.";
+    return;
+  }
 
-  // Clean Instagram URL
-  const cleanUrl = urlInput.value.split("?")[0];
+  output.textContent = "⏳ Analyzing...";
+
+  // Remove tracking parameters
+  const cleanUrl = urlInput.value.trim().split("?")[0];
 
   try {
     const response = await fetch("/api/analyze", {
@@ -20,14 +26,19 @@ async function analyze() {
 
     const text = await response.text();
 
+    // Handle API errors gracefully
     if (!response.ok) {
-      output.textContent = "ERROR:\n" + text;
+      output.textContent = "❌ ERROR:\n" + text;
       return;
     }
 
-    output.textContent = JSON.stringify(JSON.parse(text), null, 2);
+    // Pretty print JSON response
+    const data = JSON.parse(text);
+    output.textContent = JSON.stringify(data, null, 2);
 
   } catch (err) {
-    output.textContent = "Request failed:\n" + err.message;
+    output.textContent =
+      "❌ Request failed.\n" +
+      "Reason: " + err.message;
   }
 }
