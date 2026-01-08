@@ -1,36 +1,54 @@
-from typing import Dict
+from typing import List, Dict
 from transformers import pipeline
-from backend.services.comment_service import fetch_instagram_comments
 
-toxicity_classifier = pipeline(
+# --------------------------------------------------
+# LOAD MODEL ONCE (IMPORTANT FOR PERFORMANCE)
+# --------------------------------------------------
+toxicity_pipeline = pipeline(
     "text-classification",
     model="unitary/toxic-bert",
-    tokenizer="unitary/toxic-bert",
     top_k=None
 )
 
 
-def analyze_toxicity(instagram_data: Dict) -> float:
+def analyze_toxicity(comments: List[str]) -> Dict:
     """
-    Analyze toxicity of real Instagram comments.
+    Analyze a list of comments and return an aggregated toxicity score.
     """
 
-    shortcode = instagram_data["shortcode"]
-    comments = fetch_instagram_comments(shortcode)
-
+    # 🛡️ Safety: empty or invalid input
     if not comments:
-        return 0.0
+        return {
+            "toxicity_score": 0.0,
+            "label": "UNKNOWN",
+            "model": "unitary/toxic-bert"
+        }
 
-    results = toxicity_classifier(comments)
+    scores = []
 
-    toxic_scores = []
+    for text in comments:
+        try:
+            result = toxicity_pipeline(text[:512])[0]
+            toxic_score = next(
+                (item["score"] for item in result if item["label"] == "toxic"),
+                0.0
+            )
+            scores.append(toxic_score)
+        except Exception:
+            continue
 
-    for comment_result in results:
-        for label in comment_result:
-            if label["label"].lower() == "toxic":
-                toxic_scores.append(label["score"])
+    # If model failed on all comments
+    if not scores:
+        return {
+            "toxicity_score": 0.0,
+            "label": "UNKNOWN",
+            "model": "unitary/toxic-bert"
+        }
 
-    if not toxic_scores:
-        return 0.0
+    avg_score = round(sum(scores) / len(scores), 2)
 
-    return round(sum(toxic_scores) / len(toxic_scores), 2)
+    return {
+        "toxicity_score": avg_score,
+        "label": "TOXIC" if avg_score > 0.5 else "NON_TOXIC",
+        "model": "unitary/toxic-bert"
+    }

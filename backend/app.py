@@ -11,7 +11,7 @@ app = FastAPI(
 )
 
 # --------------------------------------------------
-# CORS CONFIG (required for frontend & extensions)
+# CORS CONFIG (frontend + future browser extension)
 # --------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -24,14 +24,17 @@ app.add_middleware(
 # --------------------------------------------------
 # API ROUTES
 # --------------------------------------------------
-app.include_router(api_router, prefix="/api")
+# NOTE:
+# /api prefix is already defined inside routes.py
+# DO NOT add prefix here again
+app.include_router(api_router)
 
 # --------------------------------------------------
-# FRONTEND SERVING (auto-load UI)
+# FRONTEND SERVING
 # --------------------------------------------------
-# frontend/index.html will be served at "/"
+# frontend/index.html is served at "/"
 app.mount(
-    "/", 
-    StaticFiles(directory="frontend", html=True), 
+    "/",
+    StaticFiles(directory="frontend", html=True),
     name="frontend"
 )
