@@ -8,6 +8,7 @@ async function analyze() {
     return;
   }
 
+  // Show processing state
   output.textContent = "⏳ Analyzing Instagram post...";
 
   // Remove tracking parameters (?utm_*)
@@ -24,7 +25,7 @@ async function analyze() {
       })
     });
 
-    // Read raw response text first
+    // Read raw response text first (safer for debugging)
     const text = await response.text();
 
     // Handle API-level errors
@@ -36,7 +37,7 @@ async function analyze() {
       return;
     }
 
-    // Pretty-print JSON
+    // Parse and pretty-print JSON
     const data = JSON.parse(text);
     output.textContent = JSON.stringify(data, null, 2);
 
