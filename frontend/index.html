@@ -16,6 +16,9 @@
       Deepfake Detection & Toxic Comment Analysis
     </p>
 
+    <!-- ========================= -->
+    <!-- Instagram URL Analysis -->
+    <!-- ========================= -->
     <input
       type="text"
       id="url"
@@ -23,8 +26,24 @@
       autocomplete="off"
     />
 
-    <button onclick="analyze()">Analyze</button>
+    <button onclick="analyzeInstagram()">Analyze Instagram</button>
 
+    <hr />
+
+    <!-- ========================= -->
+    <!-- Video Upload Deepfake -->
+    <!-- ========================= -->
+    <input
+      type="file"
+      id="videoFile"
+      accept="video/mp4"
+    />
+
+    <button onclick="analyzeVideo()">Analyze Uploaded Video</button>
+
+    <!-- ========================= -->
+    <!-- Output -->
+    <!-- ========================= -->
     <pre id="output">Waiting for input...</pre>
   </div>
 

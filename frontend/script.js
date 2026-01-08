@@ -8,9 +8,9 @@ async function analyze() {
     return;
   }
 
-  output.textContent = "⏳ Analyzing...";
+  output.textContent = "⏳ Analyzing Instagram post...";
 
-  // Remove tracking parameters
+  // Remove tracking parameters (?utm_*)
   const cleanUrl = urlInput.value.trim().split("?")[0];
 
   try {
@@ -24,15 +24,19 @@ async function analyze() {
       })
     });
 
+    // Read raw response text first
     const text = await response.text();
 
-    // Handle API errors gracefully
+    // Handle API-level errors
     if (!response.ok) {
-      output.textContent = "❌ ERROR:\n" + text;
+      output.textContent =
+        "❌ API Error\n" +
+        "Status: " + response.status + "\n\n" +
+        text;
       return;
     }
 
-    // Pretty print JSON response
+    // Pretty-print JSON
     const data = JSON.parse(text);
     output.textContent = JSON.stringify(data, null, 2);
 
