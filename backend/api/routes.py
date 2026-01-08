@@ -1,58 +1,68 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
+import tempfile
+import os
 
-from backend.api.schemas import AnalyzeRequest, AnalyzeResponse
-from backend.services.instagram_service import parse_instagram_url
-from backend.services.comment_service import fetch_instagram_comments
-from backend.services.toxicity_service import analyze_toxicity
-from backend.services.deepfake_service import analyze_video_deepfake
-from backend.services.fusion_engine import fuse_results
+from backend.services.video_utils import extract_frames
+from backend.services.face_utils import extract_faces
+from backend.services.deepfake_model import predict_frame
+import numpy as np
 
-# --------------------------------------------------
-# ROUTER CONFIG
-# --------------------------------------------------
-router = APIRouter(
-    prefix="/api",
-    tags=["Analysis"]
-)
+router = APIRouter(prefix="/api", tags=["Analysis"])
 
 
-# --------------------------------------------------
-# ANALYZE ENDPOINT
-# --------------------------------------------------
-@router.post("/analyze", response_model=AnalyzeResponse)
-def analyze_instagram_post(payload: AnalyzeRequest):
+@router.post("/analyze/video")
+def analyze_uploaded_video(file: UploadFile = File(...)):
     """
-    Analyze an Instagram post or reel for:
-    - Toxic comments (text analysis)
-    - Deepfake likelihood (video analysis)
+    Analyze user-uploaded video for deepfake detection.
     """
 
-    # 1️⃣ Parse & validate Instagram URL
+    if not file.filename.endswith(".mp4"):
+        raise HTTPException(status_code=400, detail="Only .mp4 videos are supported")
+
     try:
-        insta_data = parse_instagram_url(str(payload.instagram_url))
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        # 1️⃣ Save uploaded video to temp file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            tmp.write(file.file.read())
+            video_path = tmp.name
 
-    # 2️⃣ Fetch Instagram comments (safe + fallback)
-    comments = fetch_instagram_comments(insta_data["shortcode"])
+        # 2️⃣ Extract frames
+        frames = extract_frames(video_path)
 
-    # 3️⃣ Toxicity analysis (BERT-based)
-    toxicity_result = analyze_toxicity(comments)
+        if not frames:
+            raise RuntimeError("No frames extracted from uploaded video")
 
-    # 4️⃣ Video deepfake analysis (baseline / CNN-ready)
-    video_result = analyze_video_deepfake(insta_data["original_url"])
+        face_scores = []
 
-    # 5️⃣ Fuse text + video results
-    final_result = fuse_results(
-        text_result=toxicity_result,
-        video_result=video_result
-    )
+        # 3️⃣ Face detection + CNN
+        for frame in frames:
+            faces = extract_faces(frame)
+            for face in faces:
+                score = predict_frame(face)
+                face_scores.append(score)
 
-    # 6️⃣ Structured API response
-    return AnalyzeResponse(
-        instagram=insta_data,
-        toxicity=toxicity_result,
-        deepfake=video_result,
-        final_analysis=final_result,
-        message="AI analysis completed successfully"
-    )
+        if not face_scores:
+            raise RuntimeError("No faces detected in video")
+
+        avg_score = float(np.mean(face_scores))
+
+        risk = (
+            "High" if avg_score > 0.7
+            else "Medium" if avg_score > 0.4
+            else "Low"
+        )
+
+        return {
+            "deepfake_score": round(avg_score, 2),
+            "risk_level": risk,
+            "model": "resnet18-face-cnn",
+            "faces_analyzed": len(face_scores),
+            "status": "success"
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        # Cleanup temp file
+        if os.path.exists(video_path):
+            os.remove(video_path)
