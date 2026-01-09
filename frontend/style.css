@@ -128,3 +128,89 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* ========================= */
+/* Results Section */
+/* ========================= */
+.results {
+  margin-top: 15px;
+}
+
+.results.hidden {
+  display: none;
+}
+
+/* Individual Result Card */
+.result-card {
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.result-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+/* Highlighted Final Risk */
+.result-card.highlight {
+  border: 2px solid #2563eb;
+  text-align: center;
+}
+
+/* ========================= */
+/* Badges */
+/* ========================= */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+/* Large badge (final risk) */
+.badge.large {
+  font-size: 16px;
+  padding: 6px 16px;
+}
+
+/* Risk colors */
+.low {
+  background: #16a34a;
+  color: #ecfdf5;
+}
+
+.medium {
+  background: #f59e0b;
+  color: #fffbeb;
+}
+
+.high {
+  background: #dc2626;
+  color: #fef2f2;
+}
+
+.unavailable {
+  background: #475569;
+  color: #e5e7eb;
+}
+
+/* ========================= */
+/* Progress Bar */
+/* ========================= */
+.progress {
+  background: #1e293b;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #2563eb;
+  transition: width 0.5s ease;
+}

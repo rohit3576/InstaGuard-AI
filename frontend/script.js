@@ -2,16 +2,20 @@ async function analyze() {
   const urlInput = document.getElementById("url");
   const output = document.getElementById("output");
 
+  // ----------------------------
   // Basic validation
+  // ----------------------------
   if (!urlInput.value.trim()) {
     output.textContent = "⚠️ Please enter an Instagram URL.";
     return;
   }
 
-  // Show processing state
+  // ----------------------------
+  // Processing state
+  // ----------------------------
   output.textContent = "⏳ Analyzing Instagram post...";
 
-  // Remove tracking parameters (?utm_*)
+  // Clean Instagram URL (remove tracking params)
   const cleanUrl = urlInput.value.trim().split("?")[0];
 
   try {
@@ -25,10 +29,14 @@ async function analyze() {
       })
     });
 
-    // Read raw response text first (safer for debugging)
+    // ----------------------------
+    // Read raw response text first
+    // ----------------------------
     const text = await response.text();
 
-    // Handle API-level errors
+    // ----------------------------
+    // API-level error handling
+    // ----------------------------
     if (!response.ok) {
       output.textContent =
         "❌ API Error\n" +
@@ -37,11 +45,16 @@ async function analyze() {
       return;
     }
 
+    // ----------------------------
     // Parse and pretty-print JSON
+    // ----------------------------
     const data = JSON.parse(text);
     output.textContent = JSON.stringify(data, null, 2);
 
   } catch (err) {
+    // ----------------------------
+    // Network / JS error handling
+    // ----------------------------
     output.textContent =
       "❌ Request failed.\n" +
       "Reason: " + err.message;

@@ -9,13 +9,18 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+
+  <!-- ========================= -->
   <!-- Loading Overlay -->
-<div id="loadingOverlay" class="loading hidden">
-  <div class="spinner"></div>
-  <p id="loadingText">Processing...</p>
-</div>
+  <!-- ========================= -->
+  <div id="loadingOverlay" class="loading hidden">
+    <div class="spinner"></div>
+    <p id="loadingText">Processing...</p>
+  </div>
 
-
+  <!-- ========================= -->
+  <!-- Main Card -->
+  <!-- ========================= -->
   <div class="card">
     <h2>🛡 InstaGuard AI</h2>
     <p class="subtitle">
@@ -31,7 +36,6 @@
       placeholder="Paste Instagram post / reel URL"
       autocomplete="off"
     />
-
     <button onclick="analyzeInstagram()">Analyze Instagram</button>
 
     <hr />
@@ -44,13 +48,39 @@
       id="videoFile"
       accept="video/mp4"
     />
-
     <button onclick="analyzeVideo()">Analyze Uploaded Video</button>
 
     <!-- ========================= -->
-    <!-- Output -->
+    <!-- Results Section -->
     <!-- ========================= -->
-    <pre id="output">Waiting for input...</pre>
+    <div id="results" class="results hidden">
+
+      <!-- Deepfake Card -->
+      <div class="result-card">
+        <h3>🎥 Deepfake Analysis</h3>
+        <span id="deepfakeBadge" class="badge unavailable">—</span>
+
+        <div class="progress">
+          <div id="deepfakeBar" class="progress-fill"></div>
+        </div>
+
+        <p id="deepfakeText">—</p>
+      </div>
+
+      <!-- Toxicity Card -->
+      <div class="result-card">
+        <h3>💬 Toxicity Analysis</h3>
+        <span id="toxicityBadge" class="badge unavailable">—</span>
+        <p id="toxicityText">—</p>
+      </div>
+
+      <!-- Final Risk Card -->
+      <div class="result-card highlight">
+        <h3>⚠️ Final Risk</h3>
+        <span id="finalBadge" class="badge large unavailable">—</span>
+      </div>
+
+    </div>
   </div>
 
   <!-- JS -->
