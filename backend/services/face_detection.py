@@ -27,10 +27,10 @@ class FaceDetector:
             for detection in results.detections:
                 bbox = detection.location_data.relative_bounding_box
 
-                x = int(bbox.xmin * w)
-                y = int(bbox.ymin * h)
-                width = int(bbox.width * w)
-                height = int(bbox.height * h)
+                x = max(0, int(bbox.xmin * w))
+                y = max(0, int(bbox.ymin * h))
+                width = min(w - x, int(bbox.width * w))
+                height = min(h - y, int(bbox.height * h))
 
                 faces.append({
                     "x": x,
