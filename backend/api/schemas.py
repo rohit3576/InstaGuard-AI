@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl
-from typing import Dict, Any, Optional
+from typing import Optional
 
 
 class AnalyzeRequest(BaseModel):
@@ -7,8 +7,7 @@ class AnalyzeRequest(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
-    instagram: Dict[str, Any]
-    toxicity: Dict[str, Any]
-    deepfake: Dict[str, Any]
-    final_analysis: Dict[str, Any]
+    deepfake_score: float
+    toxicity_score: float
+    risk_level: str
     message: Optional[str] = None

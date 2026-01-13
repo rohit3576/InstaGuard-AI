@@ -1,68 +1,66 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
-import tempfile
-import os
+from backend.api.schemas import AnalyzeRequest, AnalyzeResponse
+from backend.services.instagram_service import parse_instagram_url
+from backend.services.comment_service import fetch_instagram_comments
+from backend.services.toxicity_service import analyze_toxicity
+from backend.services.deepfake_service import analyze_video_deepfake
+from backend.services.fusion_engine import fuse_results
 
-from backend.services.video_utils import extract_frames
-from backend.services.face_utils import extract_faces
-from backend.services.deepfake_model import predict_frame
-import numpy as np
-
-router = APIRouter(prefix="/api", tags=["Analysis"])
+router = APIRouter()
 
 
-@router.post("/analyze/video")
-def analyze_uploaded_video(file: UploadFile = File(...)):
+# ======================================================
+# MODE B — VIDEO UPLOAD (FULL DEEPFAKE)
+# ======================================================
+@router.post("/api/analyze/video")
+async def analyze_uploaded_video(video: UploadFile = File(...)):
     """
-    Analyze user-uploaded video for deepfake detection.
+    Deepfake detection for uploaded videos only
     """
 
-    if not file.filename.endswith(".mp4"):
-        raise HTTPException(status_code=400, detail="Only .mp4 videos are supported")
+    if not video.filename.endswith(".mp4"):
+        raise HTTPException(status_code=400, detail="Only MP4 videos are supported")
+
+    result = analyze_video_deepfake(video)
+
+    return result
+
+
+# ======================================================
+# MODE A — INSTAGRAM URL (TEXT ONLY)
+# ======================================================
+@router.post("/api/analyze", response_model=AnalyzeResponse)
+def analyze_instagram_post(payload: AnalyzeRequest):
+    """
+    Instagram analysis:
+    - Toxic comments
+    - Metadata
+    - NO video processing
+    """
 
     try:
-        # 1️⃣ Save uploaded video to temp file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-            tmp.write(file.file.read())
-            video_path = tmp.name
+        insta_data = parse_instagram_url(str(payload.instagram_url))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-        # 2️⃣ Extract frames
-        frames = extract_frames(video_path)
+    # Fetch comments (safe + fallback)
+    comments = fetch_instagram_comments(insta_data["shortcode"])
 
-        if not frames:
-            raise RuntimeError("No frames extracted from uploaded video")
+    # Toxicity analysis
+    toxicity_score = analyze_toxicity(comments)
 
-        face_scores = []
+    # No video allowed → deepfake score fixed
+    deepfake_score = 0.0
 
-        # 3️⃣ Face detection + CNN
-        for frame in frames:
-            faces = extract_faces(frame)
-            for face in faces:
-                score = predict_frame(face)
-                face_scores.append(score)
+    # Fuse results
+    risk_level = fuse_results(
+        text_result=toxicity_score,
+        video_result=None
+    )
 
-        if not face_scores:
-            raise RuntimeError("No faces detected in video")
-
-        avg_score = float(np.mean(face_scores))
-
-        risk = (
-            "High" if avg_score > 0.7
-            else "Medium" if avg_score > 0.4
-            else "Low"
-        )
-
-        return {
-            "deepfake_score": round(avg_score, 2),
-            "risk_level": risk,
-            "model": "resnet18-face-cnn",
-            "faces_analyzed": len(face_scores),
-            "status": "success"
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    finally:
-        # Cleanup temp file
-        if os.path.exists(video_path):
-            os.remove(video_path)
+    return AnalyzeResponse(
+        deepfake_score=deepfake_score,
+        toxicity_score=toxicity_score["score"],
+        risk_level=risk_level,
+        message="Instagram text analysis completed"
+    )
